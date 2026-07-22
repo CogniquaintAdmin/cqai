@@ -1,4 +1,4 @@
-#!/home/ubuntu/whatsapp-summary/venv/bin/python
+#!/usr/bin/env python3
 
 import sqlite3
 import json
@@ -19,10 +19,13 @@ from faster_whisper import WhisperModel
 # CONFIG
 # =============================
 
-DB_PATH = "/home/ubuntu/whatsapp-summary/data/messages.db"
+DB_PATH = os.getenv(
+    "DB_PATH",
+    os.path.expanduser("~/whatsapp-summary/data/messages.db")
+)
 
-BATCH_SIZE = 50
-SLEEP_SECONDS = 30
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", "50"))
+SLEEP_SECONDS = int(os.getenv("SLEEP_SECONDS", "30"))
 
 AWS_REGION = os.getenv(
     "AWS_REGION",
@@ -65,14 +68,21 @@ def now():
 
 
 
-def db():
+def get_db_connection():
 
     conn = sqlite3.connect(DB_PATH)
-
     conn.row_factory = sqlite3.Row
-
     return conn
 
+
+def parse_bedrock_text(response):
+
+    try:
+        return response["output"]["message"]["content"][0]["text"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise RuntimeError(
+            "Unexpected Bedrock response format"
+        ) from exc
 
 
 def image_format(path):
@@ -97,28 +107,22 @@ def bedrock_text(prompt):
 
         messages=[
             {
-                "role":"user",
-                "content":[
+                "role": "user",
+                "content": [
                     {
-                        "text":prompt
+                        "text": prompt
                     }
                 ]
             }
         ],
 
         inferenceConfig={
-            "maxTokens":1000,
-            "temperature":0.2
+            "maxTokens": 1000,
+            "temperature": 0.2
         }
     )
 
-
-    return (
-        response["output"]
-        ["message"]
-        ["content"][0]
-        ["text"]
-    )
+    return parse_bedrock_text(response)
 
 
 
@@ -591,9 +595,9 @@ def enrich(row):
 
 def process():
 
-    conn=db()
+    conn = get_db_connection()
 
-    cur=conn.cursor()
+    cur = conn.cursor()
 
 
     cur.execute(
@@ -708,7 +712,7 @@ UPDATE messages
 
 SET
 
-enrichment_status='pending',
+enrichment_status='failed',
 
 last_error=?
 
@@ -733,7 +737,7 @@ row["id"]
 # DAEMON
 # =============================
 
-if __name__=="__main__":
+def main():
 
     print(
         "AI Enricher Started"
@@ -754,3 +758,8 @@ if __name__=="__main__":
         time.sleep(
             SLEEP_SECONDS
         )
+
+
+if __name__ == "__main__":
+
+    main()

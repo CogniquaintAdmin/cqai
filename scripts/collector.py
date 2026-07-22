@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -17,11 +18,20 @@ from typing import Optional
 
 HOME = Path.home()
 
-DB_PATH = HOME / "whatsapp-summary" / "data" / "messages.db"
+DB_PATH = Path(os.getenv(
+    "DB_PATH",
+    HOME / "whatsapp-summary" / "data" / "messages.db"
+))
 
-OPENCLAW = "/usr/bin/openclaw"
+OPENCLAW = os.getenv(
+    "OPENCLAW_BINARY",
+    "/usr/bin/openclaw"
+)
 
-OPENCLAW_CONFIG = HOME / ".openclaw" / "openclaw.json"
+OPENCLAW_CONFIG = Path(os.getenv(
+    "OPENCLAW_CONFIG",
+    HOME / ".openclaw" / "openclaw.json"
+))
 
 
 # =========================

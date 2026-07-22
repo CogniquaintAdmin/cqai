@@ -3,7 +3,9 @@
 import os
 import sqlite3
 
-DB = os.path.expanduser("~/whatsapp-summary/data/messages.db")
+DB = os.path.expanduser(
+    os.getenv("DB_PATH", "~/whatsapp-summary/data/messages.db")
+)
 
 
 class MessageNormalizer:
