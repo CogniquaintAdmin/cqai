@@ -1,0 +1,500 @@
+    5  ps aux | grep -i openclaw
+    6  # is it under pm2?
+    7  pm2 list 2>/dev/null
+    8  # is it in a docker container? (some OpenClaw guides run it via docker)
+    9  docker ps 2>/dev/null
+   10  # is it in a screen/tmux session?
+   11  screen -ls 2>/dev/null
+   12  tmux ls 2>/dev/null
+   13  # where's the actual binary/install?
+   14  which openclaw
+   15  readlink -f $(which openclaw)
+   16  find /usr/lib/node_modules/openclaw -path "*extensions/whatsapp*" -name "*.js"
+   17  # find any file with "whatsapp" in its path
+   18  find /usr/lib/node_modules/openclaw -iname "*whatsapp*"
+   19  # find any file that references handleMessagesUpsert, wherever it lives
+   20  grep -rl "handleMessagesUpsert" /usr/lib/node_modules/openclaw/dist/ 2>/dev/null
+   21  # fallback: search for Baileys itself, since that's the underlying WhatsApp library
+   22  find /usr/lib/node_modules/openclaw -iname "*baileys*"
+   23  # fallback: search for the "messages.upsert" event name (Baileys' actual event, handleMessagesUpsert may just be an internal alias)
+   24  grep -rl "messages.upsert" /usr/lib/node_modules/openclaw/dist/ 2>/dev/null
+   25  # see what's inside the whatsapp sandbox container
+   26  docker exec openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c find / -iname "*baileys*" 2>/dev/null
+   27  docker exec openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c find / -iname "*whatsapp*" -type d 2>/dev/null
+   28  # check what process(es) are running inside it
+   29  docker exec openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c ps aux
+   30  # check its logs directly via docker
+   31  docker logs openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c --tail 50
+   32  clear
+   33  docker ps
+   34  # re-run the finds explicitly, one at a time, so we can see if they're truly empty
+   35  docker exec openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c find / -iname "*baileys*" 2>&1
+   36  echo "---"
+   37  docker exec openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c find / -iname "*whatsapp*" 2>&1
+   38  echo "---"
+   39  # list processes without ps (read /proc directly)
+   40  docker exec openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c sh -c 'for p in /proc/[0-9]*; do echo "$p: $(cat $p/cmdline 2>/dev/null | tr "\0" " ")"; done'
+   41  echo "---"
+   42  # get its logs (this one didn't error, so let's see it standalone)
+   43  docker logs openclaw-sbx-agent-main-whatsapp-default-dire-92780e1c --tail 50
+   44  clear
+   45  ls
+   46  curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+   47  curl http://169.254.169.254/latest/meta-data/iam/security-credentials/AmazonLightsailInstance
+   48  aws iam list-role-policies   --role-name AmazonLightsailInstance
+   49  aws configure
+   50  aws sts get-caller-identity
+   51  aws configure list
+   52  cat ~/.aws/credentials
+   53  clear
+   54  aws configure
+   55  aws configure list
+   56  aws sts get-caller-identity
+   57  aws s3 ls
+   58  aws s3 mb s3://cq-openclaw-backups --region ap-south-1
+   59  aws s3 ls
+   60  cd whatsapp-summary/
+   61  ls
+   62  cd data/
+   63  ls
+   64  aws s3 cp ~/whatsapp-summary/data/messages.db s3://cq-openclaw-backups/messages.db
+   65  aws s3 ls s3://cq-openclaw-backups/
+   66  cd ..
+   67  nano backup_script.sh
+   68  chmod +x ~/scripts/openclaw-backup.sh
+   69  chmod +x backup_script.sh 
+   70  ./backup_script.sh 
+   71  celar
+   72  clear
+   73  cd whatsapp-summary/
+   74  ls
+   75  nano backup_script.sh 
+   76  rm backup_script.sh 
+   77  nano backup_script.sh 
+   78  nano whatsapp-patch.json 
+   79  rm whatsapp-patch.json 
+   80  nano whatsapp-patch.json
+   81  nano whatsapp-patch.json
+   82  nano whatsapp-patch.json
+   83  openclaw gateway restart
+   84  clear 
+   85  exit
+   86  clear
+   87  cd whatsapp-summary/
+   88  ls
+   89  nano scripts/
+   90  ls
+   91  ls
+   92  cd scrits
+   93  ls
+   94  cd scripts/
+   95  ls
+   96  cd ..
+   97  ls
+   98  clear
+   99  nano s3_backup.sh
+  100  clear
+  101  ls
+  102  cd scripts/
+  103  ls
+  104  rm summarizer.py 
+  105  ls
+  106  cat collector.py 
+  107  cd ../da
+  108  cd ../data
+  109  ls
+  110  sqlite3 messages.db 
+  111  cd sc
+  112  cd ..
+  113  cd scripts/
+  114  nano collector.py 
+  115  cd ..
+  116  cat s3_backup.sh 
+  117  ls
+  118  rm s3_backup.sh 
+  119  nano s3_backup.sh 
+  120  chmod +x s3_backup.sh 
+  121  ./s3_backup.sh 
+  122  cd data/
+  123  ls
+  124  sqlite3 messages.db 
+  125  clear
+  126  crontab -e
+  127  crontab -l
+  128  tail -100 ~/whatsapp-summary/logs/s3_backup.log
+  129  cd ..
+  130  ./s3_backup.sh 
+  131  ./s3_backup.sh 
+  132  ./s3_backup.sh 
+  133  openclaw models list
+  134  openclaw config set models.default amazon-bedrock/amazon.nova-pro-v1:0
+  135  openclaw config get models
+  136  openclaw models set amazon-bedrock/amazon.nova-pro-v1:0
+  137  openclaw config get agents.defaults.model
+  138  openclaw gateway restart
+  139  openclaw doctor
+  140  openclaw doctor --fix
+  141  openclaw plugins update amazon-bedrock
+  142  exit
+  143  clear
+  144  openclaw skills list
+  145  openclaw skills search document
+  146  cler
+  147  clear
+  148  openclaw skills list
+  149  openclaw skills enable summarize
+  150  openclaw skills enable summarize
+  151  openclaw skills enable --help
+  152  openclaw skills install summarise
+  153  openclaw skills install summarize
+  154  openclaw skills inspect summarize
+  155  openclaw skills info summarize
+  156  openclaw skills install summarize
+  157  sudo npm install -g @steipete/summarize
+  158  which summarize
+  159  summarize --version
+  160  openclaw skills info summarize
+  161  exir
+  162  exit
+  163  clear
+  164  ls
+  165  cat whatsapp-
+  166  cat whatsapp-patch.json 
+  167  cat ~/.openclaw/openclaw.json 
+  168  rm whatsapp-patch.json 
+  169  ls
+  170  rm whatsapp-patch.json 
+  171  ls
+  172  nano whatsapp-patch.json 
+  173  openclaw config patch ~/whatsapp-patch.json
+  174  cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak
+  175  openclaw config patch --file ~/whatsapp-patch.json
+  176  openclaw gateway restart
+  177  openclaw models set amazon-bedrock/openai.gpt-oss-120b-1:0
+  178  openclaw gateway restart
+  179  openclaw agents get main
+  180  openclaw agents 
+  181  clear
+  182  ls
+  183  ~/.openclaw/media 
+  184  cd ~/.openclaw/media 
+  185  cd ~/.openclaw
+  186  ls
+  187  cd media/
+  188  ls
+  189  cd inbound
+  190  ls
+  191  sudo find / -type f -iname "P205-*.pdf" 2>/dev/null
+  192  clear
+  193  openclaw doctor
+  194  openclaw skills info summarize
+  195  brew install summarize
+  196  openclaw skills enable summarize
+  197  openclaw skills enable --help
+  198  openclaw skills check
+  199  which summarize
+  200  summarize --version
+  201  openclaw skills info summarize
+  202  grep -R "bins:" -A5 -B5 /usr/lib/node_modules/openclaw/skills/summarize
+  203  grep -R "summarize" -n /usr/lib/node_modules/openclaw/skills/summarize
+  204  openclaw doctor
+  205  openclaw skills curator
+  206  openclaw agents list
+  207  openclaw config get
+  208  openclaw config 
+  209  openclaw skills list --verbose
+  210  openclaw skills help
+  211  openclaw skill --help
+  212  openclaw skills --help
+  213  openclaw skills install summarise
+  214  openclaw skills install usr/local/summarize
+  215  which summarize
+  216  openclaw skills install usr/bin/summarize
+  217  summarize --version
+  218  openclaw skills check
+  219  openclaw skills check
+  220  openclaw skills check
+  221  openclaw skills check
+  222  openclaw skills info summarize
+  223  cd whatsapp-summary/
+  224  ls
+  225  ./s3_backup.sh 
+  226  pip install pdftotext
+  227  clear
+  228  docker ps
+  229  docker image
+  230  docker images
+  231  docker exec -it openclaw-sbx-agent-main-dashboard-44f14b4f-66-b6acb97e bash
+  232  clear
+  233  openclaw skills list | grep -i pdf
+  234  docker images
+  235  clear
+  236  docker exec -it openclaw-sbx-agent-main-dashboard-44f14b4f-66-b6acb97e bash
+  237  clear
+  238  ls
+  239  rm usecase.
+  240  rm usecase.b64
+  241  clear
+  242  ls
+  243  rm usecase.json 
+  244  clear
+  245  ls
+  246  cd whatsapp-summary/
+  247  ls
+  248  cd data
+  249  sqlite3 messages.db 
+  250  clear
+  251  ls
+  252  cd ..
+  253  git init
+  254  git push 
+  255  git remote add cqai
+  256  git remote add cqai https://github.com/CogniquaintAdmin/cqai.git
+  257  git push
+  258  git push --set-upstream cqai master
+  259  git branch
+  260  ls
+  261  git status
+  262  cat > .gitignore <<EOF
+  263  venv/
+  264  logs/
+  265  data/
+  266  *.pyc
+  267  __pycache__/
+  268  .env
+  269  EOF
+  270  git add .
+  271  git commit -m "Initial commit"
+  272  git push -u cqai master
+  273  git push -u cqai master
+  274  clear
+  275  cd whatsapp-summary/
+  276  ls
+  277  git status
+  278  git push -u cqai master
+  279  git remote -v
+  280  rm -f ~/.git-credentials
+  281  git config --global --unset credential.helper
+  282  git branch -M main
+  283  git push -u cqai main
+  284  git pull cqai main --allow-unrelated-histories
+  285  git pull --no-rebase cqai main --allow-unrelated-histories
+  286  git checkout --ours .gitignore
+  287  git add .gitignore
+  288  git commit -m "Merge remote main"
+  289  git push -u cqai main
+  290  git branch -D master
+  291  git branchs
+  292  git branch
+  293  ls
+  294  clear
+  295  clear
+  296  ls
+  297  cd whatsapp-summary/
+  298  ls
+  299  cd data
+  300  sqlite3 messages.db 
+  301  clear
+  302  sqlite3 messages.db 
+  303  clear
+  304  cd whatsapp-summary/
+  305  git pull
+  306  cd scripts/
+  307  cd ..
+  308  source venv/bin/activate
+  309  clear
+  310  ls
+  311  cd scripts/
+  312  python3 ai_enricher.py 
+  313  clear
+  314  git pull
+  315  git pull
+  316  python3 ai_enricher.py 
+  317  git pull
+  318  python3 ai_enricher.py 
+  319  clear
+  320  git pull
+  321  python3 ai_enricher.py 
+  322  openclaw model list
+  323  openclaw models list
+  324  git pull
+  325  python3 ai_enricher.py 
+  326  nano ai_enricher.py 
+  327  python3 ai_enricher.py 
+  328  clear
+  329  cd whatsapp-summary/
+  330  ls
+  331  cd data 
+  332  sqlite3 messages.db
+  333  clear
+  334  clear
+  335  ls
+  336  cd whatsapp-summary/
+  337  ls
+  338  source venv/bin/activate
+  339  clear
+  340  ls
+  341  rm backup_script.sh.save 
+  342  clear
+  343  ls
+  344  git push
+  345  git config --global --list
+  346  git config --list
+  347  git config --global user.name "CogniquaintAdmin"
+  348  git config --global user.email "trial@cogniquaint.com"
+  349  git push
+  350  clear
+  351  git config --global credential.helper store
+  352  git push
+  353  git pull
+  354  ls
+  355  git push
+  356  git status
+  357  git add .
+  358  git commit -m "updated the model"
+  359  git push
+  360  clear
+  361  cd data
+  362  rm messages.db 
+  363  clear
+  364  ls
+  365  ls
+  366  cd ..
+  367  ./disable_services.sh 
+  368  rm data/messages.db 
+  369  ls
+  370  ./enable_services.sh 
+  371  ls
+  372  cd data
+  373  ls
+  374  sqlite3 messages.db 
+  375  openclaw logs --follow --plain
+  376  openclaw logs --help
+  377  cd whatsapp-summary/
+  378  ls
+  379  cd scripts/
+  380  ls
+  381  git pull
+  382  source ../venv/bin/activate
+  383  python3 segmenter.py 
+  384  python3 segmenter.py 
+  385  python3 segmenter.py 
+  386  clear
+  387  ls
+  388  cd whatsapp-summary/
+  389  ls
+  390  git pull
+  391  cd data
+  392  ls
+  393  cd ..
+  394  rmdir -r 
+  395  rm dir
+  396  rmdir
+  397  # Remove without prompting
+  398  rm -rf data
+  399  ls
+  400  ls
+  401  ls
+  402  ls
+  403  ls
+  404  cd scripts/
+  405  ls
+  406  cd ..
+  407  cd logs
+  408  ls
+  409  cat collector
+  410  cat collector-error.log 
+  411  cd ..
+  412  ls
+  413  cd data
+  414  ls
+  415  git status
+  416  cd data
+  417  mkdir data
+  418  ls
+  419  cd data
+  420  ls
+  421  ls
+  422  sqlite3 messages.db "select * from messages"
+  423  sqlite3 messages.db;
+  424  clear
+  425  cd ..
+  426  cd logs
+  427  cd ls
+  428  clear
+  429  ls
+  430  cd whatsapp-summary/
+  431  ls
+  432  cd data/
+  433  ls
+  434  ls
+  435  sqlite3 messages.db 
+  436  ls
+  437  cd ..
+  438  ls
+  439  ./disable_services.sh 
+  440  cd ls
+  441  cd data/
+  442  ls
+  443  rm messages.db 
+  444  clear
+  445  cd ..
+  446  ./enable_services.sh 
+  447  cd data/
+  448  ls
+  449  sqlite3 messages.db 
+  450  cd whatsapp-summary/
+  451  ls
+  452  cd data/
+  453  sqlite3 messages
+  454  sqlite3 messages.db 
+  455  clear
+  456  wacli version
+  457  wacli
+  458  wacli --version
+  459  docker ps
+  460  docker images
+  461  clear
+  462  clear
+  463  docker exec -it a95c6e4350e1 bash
+  464  find ~/.openclaw -iname "*wacli*" 2>/dev/null
+  465  find ~/.openclaw -type f | xargs grep -n "wacli" 2>/dev/null
+  466  find ~/.openclaw -iname "*wacli*" 2>/dev/null
+  467  ls -R ~/.openclaw/extensions/whatsapp/skills/wacli
+  468  ls -R ~/.openclaw/plugin-skills/wacli
+  469  find ~/.openclaw -type f -print0 | xargs -0 grep -n "wacli" 2>/dev/null | head -100
+  470  find ~/.openclaw -type f -print0 | xargs -0 grep -n "wacli" 2>/dev/null | head -10
+  471  find ~/.openclaw -type f -print0 | xargs -0 grep -n "wacli" 2>/dev/null | tail -10
+  472  find ~/.openclaw -type f -print0 | xargs -0 grep -n "wacli" 2>/dev/null | head -100
+  473  clear
+  474  find $(npm root -g) -type f | grep "@openclaw/whatsapp"
+  475  find / -path "*@openclaw/whatsapp*" 2>/dev/null
+  476  ls
+  477  rm messages
+  478  ls
+  479  ls
+  480  grep -R "messages.upsert" ~/.openclaw -n
+  481  grep -n "handleMessagesUpsertEvent" ~/.openclaw/extensions/whatsapp/dist/monitor-DD8bXohk.js
+  482  clear
+  483  grep -n "participant" ~/.openclaw/extensions/whatsapp/dist/monitor-DD8bXohk.js
+  484  clear
+  485  openclaw logs --follow --plain --max-bytes 1000000
+  486  clear
+  487  openclaw gateway --verbose
+  488  openclaw logs --follow --json --max-bytes 1000000
+  489  clear
+  490  sed -n '1230,1280p' ~/.openclaw/extensions/whatsapp/dist/monitor-DD8bXohk.js
+  491  nano ~/.openclaw/extensions/whatsapp/dist/monitor-DD8bXohk.js
+  492  openclaw gateway restart
+  493  openclaw logs --follow --json --max-bytes 500000
+  494  openclaw logs --follow --plain --max-bytes 500000
+  495  clear
+  496  nano ~/.openclaw/extensions/whatsapp/dist/monitor-DD8bXohk.js
+  497  openclaw gateway restart
+  498  openclaw logs --follow --plain --max-bytes 500000
+  499  clear
+  500  cd whatsapp-summary/
+  501  git add .
+  502  git commit -m "Added Requriements"
+  503  git push
+  504  history > cli_history.txt
