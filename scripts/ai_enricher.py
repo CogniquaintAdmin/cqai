@@ -25,7 +25,7 @@ DB_PATH = os.getenv(
 )
 
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "50"))
-SLEEP_SECONDS = int(os.getenv("SLEEP_SECONDS", "30"))
+SLEEP_SECONDS = int(os.getenv("SLEEP_SECONDS", "900"))
 
 AWS_REGION = os.getenv(
     "AWS_REGION",
@@ -34,7 +34,7 @@ AWS_REGION = os.getenv(
 
 BEDROCK_MODEL = os.getenv(
     "BEDROCK_MODEL",
-    "amazon.nova-pro-v1:0"
+    "anthropic.claude-sonnet-4.6"
 )
 
 BEDROCK_INFERENCE_PROFILE = os.getenv(
