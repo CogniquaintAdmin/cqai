@@ -1,0 +1,2 @@
+# cqai
+AI app
