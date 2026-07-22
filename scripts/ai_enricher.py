@@ -34,7 +34,7 @@ AWS_REGION = os.getenv(
 
 BEDROCK_MODEL = os.getenv(
     "BEDROCK_MODEL",
-    "bedrock/global.anthropic.claude-sonnet-4-6"
+    "global.anthropic.claude-sonnet-4-6"
 )
 
 BEDROCK_INFERENCE_PROFILE = os.getenv(
