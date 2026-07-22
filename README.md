@@ -20,6 +20,10 @@ export AWS_REGION="ap-south-1"
 export BEDROCK_MODEL="bedrock/global.anthropic.claude-sonnet-4-6"
 # Optionally use an inference profile ID or ARN for Bedrock models that require it
 export BEDROCK_INFERENCE_PROFILE="arn:aws:bedrock:..."
+export BATCH_SIZE="50"
+export SLEEP_SECONDS="30"
+# Feature toggles
+export ENABLE_TEXT_ENRICHMENT="false"
 ```
 
 ### Run the pipeline

@@ -44,6 +44,11 @@ BEDROCK_INFERENCE_PROFILE = os.getenv(
 
 BEDROCK_TARGET = BEDROCK_INFERENCE_PROFILE or BEDROCK_MODEL
 
+ENABLE_TEXT_ENRICHMENT = os.getenv(
+    "ENABLE_TEXT_ENRICHMENT",
+    "true"
+).lower() in ("false", "0", "no")
+
 
 # =============================
 # CLIENTS
@@ -138,6 +143,9 @@ def bedrock_text(prompt):
 # =============================
 
 def enrich_text(text):
+
+    if not ENABLE_TEXT_ENRICHMENT:
+        return "Text enrichment disabled"
 
     return bedrock_text(
 f"""

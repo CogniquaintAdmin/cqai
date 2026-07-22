@@ -60,6 +60,15 @@ class WhatsAppMessage:
     media_path: Optional[str] = None
     media_type: Optional[str] = None
     media_filename: Optional[str] = None
+    remote_jid: Optional[str] = None
+    participant: Optional[str] = None
+    sender_e164: Optional[str] = None
+    push_name: Optional[str] = None
+    group_participants: Optional[list] = None
+    message_id: Optional[str] = None
+    from_me: bool = False
+    mentioned_jids: Optional[list] = None
+    normalized_event: Optional[dict] = None
 
     @property
     def has_media(self):
@@ -121,6 +130,16 @@ class MessageRepository:
                 ai_caption TEXT,
                 last_error TEXT,
 
+                remote_jid TEXT,
+                participant TEXT,
+                sender_e164 TEXT,
+                push_name TEXT,
+                group_participants TEXT,
+                message_id TEXT,
+                from_me INTEGER DEFAULT 0,
+                mentioned_jids TEXT,
+                normalized_event TEXT,
+
                 FOREIGN KEY (group_id) REFERENCES groups(group_id)
 
             )
@@ -150,11 +169,20 @@ class MessageRepository:
                 media_type,
                 media_filename,
 
-                timestamp
+                timestamp,
+                remote_jid,
+                participant,
+                sender_e164,
+                push_name,
+                group_participants,
+                message_id,
+                from_me,
+                mentioned_jids,
+                normalized_event
 
             )
 
-            VALUES (?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """,
             (
 
@@ -168,7 +196,16 @@ class MessageRepository:
                 message.media_type,
                 message.media_filename,
 
-                message.timestamp
+                message.timestamp,
+                message.remote_jid,
+                message.participant,
+                message.sender_e164,
+                message.push_name,
+                json.dumps(message.group_participants or []),
+                message.message_id,
+                int(message.from_me),
+                json.dumps(message.mentioned_jids or []),
+                json.dumps(message.normalized_event or {})
 
             )
         )
@@ -254,7 +291,16 @@ class WebInboundParser:
 
                 media_type=payload.get("mediaType"),
 
-                media_filename=payload.get("mediaFileName")
+                media_filename=payload.get("mediaFileName"),
+                remote_jid=payload.get("remoteJid"),
+                participant=payload.get("participant"),
+                sender_e164=payload.get("senderE164"),
+                push_name=payload.get("pushName"),
+                group_participants=payload.get("groupParticipants", []),
+                message_id=payload.get("messageId"),
+                from_me=payload.get("fromMe", False),
+                mentioned_jids=payload.get("mentionedJids", []),
+                normalized_event=payload
 
             )
 
