@@ -32,10 +32,17 @@ AWS_REGION = os.getenv(
     "ap-south-1"
 )
 
-MODEL_ID = os.getenv(
+BEDROCK_MODEL = os.getenv(
     "BEDROCK_MODEL",
     "amazon.nova-pro-v1:0"
 )
+
+BEDROCK_INFERENCE_PROFILE = os.getenv(
+    "BEDROCK_INFERENCE_PROFILE",
+    None
+)
+
+BEDROCK_TARGET = BEDROCK_INFERENCE_PROFILE or BEDROCK_MODEL
 
 
 # =============================
@@ -103,7 +110,7 @@ def bedrock_text(prompt):
 
     response = bedrock.converse(
 
-        modelId=MODEL_ID,
+        modelId=BEDROCK_TARGET,
 
         messages=[
             {
@@ -465,7 +472,7 @@ def enrich_video(row):
 
             response=bedrock.converse(
 
-                modelId=MODEL_ID,
+                modelId=BEDROCK_TARGET,
 
                 messages=[
 
@@ -646,7 +653,7 @@ WHERE id=?
 
             metadata={
 
-                "model":MODEL_ID,
+                "model":BEDROCK_TARGET,
 
                 "type":row["message_type"],
 

@@ -18,6 +18,8 @@ export OPENCLAW_BINARY="/usr/bin/openclaw"
 export OPENCLAW_CONFIG="$HOME/.openclaw/openclaw.json"
 export AWS_REGION="ap-south-1"
 export BEDROCK_MODEL="amazon.nova-pro-v1:0"
+# Optionally use an inference profile ID or ARN for Bedrock models that require it
+export BEDROCK_INFERENCE_PROFILE="arn:aws:bedrock:..."
 ```
 
 ### Run the pipeline
