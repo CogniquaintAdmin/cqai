@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euo pipefail
+
+# ==========================
+# Configuration
+# ==========================
+BUCKET="cq-openclaw-backups"
+DB_PATH="$HOME/whatsapp-summary/data/messages.db"
+MEDIA_PATH="$HOME/.openclaw/media"
+
+YEAR=$(date +%Y)
+MONTH=$(date +%m)
+DAY=$(date +%d)
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+BACKUP_PREFIX="${YEAR}/${MONTH}/${DAY}"
+
+echo "[$(date)] Starting backup..."
+
+# Backup SQLite database
+aws s3 cp \
+    "$DB_PATH" \
+    "s3://${BUCKET}/${BACKUP_PREFIX}/messages.db"
+
+# Backup media and delete local copy after successful upload
+if [ -d "$MEDIA_PATH" ]; then
+    aws s3 sync \
+        "$MEDIA_PATH" \
+        "s3://${BUCKET}/${BACKUP_PREFIX}/media/"
+
+    echo "Media uploaded successfully. Removing local files..."
+
+    find "$MEDIA_PATH" -type f -delete
+else
+    echo "Media directory not found: $MEDIA_PATH"
+fi
+
+echo "[$(date)] Backup completed successfully."
