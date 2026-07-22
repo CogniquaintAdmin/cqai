@@ -1,0 +1,7 @@
+{
+  "agents": {
+    "defaults": {
+      "model": "amazon-bedrock/openai.gpt-oss-120b-1:0"
+    }
+  }
+}

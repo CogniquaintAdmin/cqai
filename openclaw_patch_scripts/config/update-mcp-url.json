@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "servers": {
+      "cogniquaint_erp_mcp": {
+        "env": {
+          "ERPNEXT_URL": "https://people.cogniquaint.com"
+        }
+      }
+    }
+  }
+}

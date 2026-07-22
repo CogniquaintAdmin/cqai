@@ -1,0 +1,12 @@
+{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "mode": "default",
+        "reserveTokensFloor": 4000,
+        "reserveTokens": 4000,
+        "keepRecentTokens": 3000
+      }
+    }
+  }
+}

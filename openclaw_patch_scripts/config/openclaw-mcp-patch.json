@@ -1,0 +1,11 @@
+{
+  "tools": {
+    "sandbox": {
+      "tools": {
+        "alsoAllow": [
+          "cogniquaint_erp_mcp__*"
+        ]
+      }
+    }
+  }
+}
