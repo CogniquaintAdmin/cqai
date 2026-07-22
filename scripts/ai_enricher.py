@@ -188,7 +188,7 @@ def enrich_image(row):
 
     response=bedrock.converse(
 
-        modelId=MODEL_ID,
+        modelId=BEDROCK_TARGET,
 
         messages=[
             {
