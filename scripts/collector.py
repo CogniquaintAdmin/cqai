@@ -76,46 +76,65 @@ class MessageRepository:
 
         self.conn = sqlite3.connect(db_path)
 
+        # Create groups table
         self.conn.execute("""
-		    CREATE TABLE IF NOT EXISTS "messages" (
+            CREATE TABLE IF NOT EXISTS "groups" (
 
-		    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                group_id TEXT UNIQUE NOT NULL
 
-		    group_id TEXT,
-		    sender TEXT,
-		    body TEXT,
+            )
+        """)
 
-		    message_type TEXT,
+        # Create messages table with FK to groups
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS "messages" (
 
-		    media_path TEXT,
-		    media_type TEXT,
-		    media_filename TEXT,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-		    timestamp INTEGER,
+                group_id TEXT NOT NULL,
+                sender TEXT,
+                body TEXT,
 
-		    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                message_type TEXT,
 
-		    normalized_content TEXT,
+                media_path TEXT,
+                media_type TEXT,
+                media_filename TEXT,
 
-		    enrichment_status TEXT DEFAULT 'pending',
+                timestamp INTEGER,
 
-		    ai_content TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-		    ai_metadata TEXT,
+                normalized_content TEXT,
 
-		    enriched_at DATETIME,
+                enrichment_status TEXT DEFAULT 'pending',
 
-		    ocr_text TEXT,
-		    transcript TEXT,
-		    ai_caption TEXT,
-		    last_error TEXT   
-		)
+                ai_content TEXT,
 
+                ai_metadata TEXT,
+
+                enriched_at DATETIME,
+
+                ocr_text TEXT,
+                transcript TEXT,
+                ai_caption TEXT,
+                last_error TEXT,
+
+                FOREIGN KEY (group_id) REFERENCES groups(group_id)
+
+            )
         """)
 
         self.conn.commit()
 
     def save(self, message):
+
+        # Ensure group exists
+        self.conn.execute(
+            "INSERT OR IGNORE INTO groups (group_id) VALUES (?)",
+            (message.group_id,)
+        )
 
         self.conn.execute(
             """

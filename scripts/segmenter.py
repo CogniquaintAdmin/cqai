@@ -20,11 +20,18 @@ GROUP_DB_DIR = Path(os.getenv("GROUP_DB_DIR", DB_PATH.parent / "groups"))
 SANITIZE_RE = re.compile(r"[^A-Za-z0-9_-]+")
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS "groups" (
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id TEXT UNIQUE NOT NULL
+
+);
+
 CREATE TABLE IF NOT EXISTS "messages" (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    group_id TEXT,
+    group_id TEXT NOT NULL,
     sender TEXT,
     body TEXT,
 
@@ -51,7 +58,10 @@ CREATE TABLE IF NOT EXISTS "messages" (
     ocr_text TEXT,
     transcript TEXT,
     ai_caption TEXT,
-    last_error TEXT
+    last_error TEXT,
+
+    FOREIGN KEY (group_id) REFERENCES groups(group_id)
+
 );
 """
 
@@ -80,6 +90,10 @@ def copy_group(conn, group_id: str, out_db: Path, dry_run: bool = False):
     oconn = sqlite3.connect(str(out_db))
     oconn.execute(SCHEMA)
 
+    # Insert the group record first
+    oconn.execute("INSERT OR IGNORE INTO groups (group_id) VALUES (?)", (group_id,))
+    oconn.commit()
+
     src = conn.execute("SELECT * FROM messages WHERE group_id=? ORDER BY timestamp", (group_id,))
     rows = src.fetchall()
 
@@ -89,14 +103,17 @@ def copy_group(conn, group_id: str, out_db: Path, dry_run: bool = False):
         return
 
     colnames = [description[0] for description in src.description]
+    
+    # Exclude 'id' to let SQLite auto-generate new IDs in the per-group DB
+    colnames_no_id = [c for c in colnames if c != 'id']
 
-    placeholders = ",".join(["?"] * len(colnames))
-    insert_sql = f"INSERT INTO messages ({','.join(colnames)}) VALUES ({placeholders})"
+    placeholders = ",".join(["?"] * len(colnames_no_id))
+    insert_sql = f"INSERT INTO messages ({','.join(colnames_no_id)}) VALUES ({placeholders})"
 
     values = []
     for r in rows:
-        # sqlite3.Row -> sequence works; ensure we extract by column order
-        values.append(tuple(r[col] for col in colnames))
+        # sqlite3.Row -> sequence works; ensure we extract by column order, skip 'id'
+        values.append(tuple(r[col] for col in colnames_no_id))
 
     oconn.executemany(insert_sql, values)
     oconn.commit()
@@ -118,6 +135,15 @@ def main():
 
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
+
+    # Ensure main DB has groups table (optional, for reference)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS "groups" (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id TEXT UNIQUE NOT NULL
+        );
+    """)
+    conn.commit()
 
     cur = conn.cursor()
     cur.execute("SELECT DISTINCT group_id FROM messages WHERE group_id IS NOT NULL AND group_id != ''")
