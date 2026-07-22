@@ -1,0 +1,23 @@
+[Unit]
+Description=WhatsApp AI Summary Collector
+After=network.target
+
+[Service]
+Type=simple
+
+User=ubuntu
+WorkingDirectory=/home/ubuntu/whatsapp-summary
+
+Environment="PATH=/home/ubuntu/whatsapp-summary/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment=PYTHONUNBUFFERED=1
+
+ExecStart=/home/ubuntu/whatsapp-summary/venv/bin/python /home/ubuntu/whatsapp-summary/scripts/collector.py
+
+Restart=always
+RestartSec=5
+
+StandardOutput=append:/home/ubuntu/whatsapp-summary/logs/collector.log
+StandardError=append:/home/ubuntu/whatsapp-summary/logs/collector-error.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+[Unit]
+Description=WhatsApp AI Summary Normaliser
+After=network.target whatsapp-collector.service
+
+[Service]
+Type=simple
+
+User=ubuntu
+
+WorkingDirectory=/home/ubuntu/whatsapp-summary
+
+Environment="PATH=/home/ubuntu/whatsapp-summary/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment=PYTHONUNBUFFERED=1
+
+ExecStart=/home/ubuntu/whatsapp-summary/venv/bin/python /home/ubuntu/whatsapp-summary/scripts/normaliser.py
+
+Restart=always
+RestartSec=10
+
+StandardOutput=append:/home/ubuntu/whatsapp-summary/logs/normaliser.log
+StandardError=append:/home/ubuntu/whatsapp-summary/logs/normaliser-error.log
+
+[Install]
+WantedBy=multi-user.target
