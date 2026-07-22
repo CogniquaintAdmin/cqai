@@ -613,7 +613,7 @@ SELECT *
 
 FROM messages
 
-WHERE enrichment_status='pending'
+WHERE enrichment_status IN ('pending', 'failed')
 
 ORDER BY timestamp
 
