@@ -64,7 +64,6 @@ class WhatsAppMessage:
     participant: Optional[str] = None
     sender_e164: Optional[str] = None
     push_name: Optional[str] = None
-    group_participants: Optional[list] = None
     message_id: Optional[str] = None
     from_me: bool = False
     mentioned_jids: Optional[list] = None
@@ -90,7 +89,10 @@ class MessageRepository:
             CREATE TABLE IF NOT EXISTS "groups" (
 
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                group_id TEXT UNIQUE NOT NULL
+                group_id TEXT UNIQUE NOT NULL,
+                participants TEXT NOT NULL DEFAULT '[]',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 
             )
         """)
@@ -134,7 +136,6 @@ class MessageRepository:
                 participant TEXT,
                 sender_e164 TEXT,
                 push_name TEXT,
-                group_participants TEXT,
                 message_id TEXT,
                 from_me INTEGER DEFAULT 0,
                 mentioned_jids TEXT,
@@ -150,9 +151,18 @@ class MessageRepository:
     def save(self, message):
 
         # Ensure group exists
+        participants = json.dumps(payload := (message.normalized_event or {}).get("groupParticipants", []))
+
         self.conn.execute(
-            "INSERT OR IGNORE INTO groups (group_id) VALUES (?)",
-            (message.group_id,)
+            """
+            INSERT INTO groups (group_id, participants)
+            VALUES (?, ?)
+            ON CONFLICT(group_id)
+            DO UPDATE SET
+                participants=excluded.participants,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (message.group_id, participants)
         )
 
         self.conn.execute(
@@ -174,7 +184,6 @@ class MessageRepository:
                 participant,
                 sender_e164,
                 push_name,
-                group_participants,
                 message_id,
                 from_me,
                 mentioned_jids,
@@ -201,7 +210,6 @@ class MessageRepository:
                 message.participant,
                 message.sender_e164,
                 message.push_name,
-                json.dumps(message.group_participants or []),
                 message.message_id,
                 int(message.from_me),
                 json.dumps(message.mentioned_jids or []),
@@ -296,7 +304,6 @@ class WebInboundParser:
                 participant=payload.get("participant"),
                 sender_e164=payload.get("senderE164"),
                 push_name=payload.get("pushName"),
-                group_participants=payload.get("groupParticipants", []),
                 message_id=payload.get("messageId"),
                 from_me=payload.get("fromMe", False),
                 mentioned_jids=payload.get("mentionedJids", []),
