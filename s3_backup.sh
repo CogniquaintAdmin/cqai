@@ -4,6 +4,38 @@ set -euo pipefail
 # ==========================================================
 # WhatsApp Summary - Shift-wise S3 Backup
 # ==========================================================
+#
+# Server Time Zone : Asia/Kolkata (IST)
+#
+# Shift Schedule:
+#   A Shift : 06:10 IST → 14:10 IST
+#   B Shift : 14:10 IST → 22:10 IST
+#   C Shift : 22:10 IST → 06:10 IST (Next Day)
+#
+# Backups are taken at the END of each shift.
+#
+# Folder Structure:
+#
+#   YYYY/MM/DD/A/
+#   YYYY/MM/DD/B/
+#   YYYY/MM/DD/C/
+#
+# The folder date represents the SHIFT START DATE.
+#
+# Example:
+#   A Shift : 25 Jul 06:10 → 25 Jul 14:10
+#       -> 2026/07/25/A/
+#
+#   B Shift : 25 Jul 14:10 → 25 Jul 22:10
+#       -> 2026/07/25/B/
+#
+#   C Shift : 25 Jul 22:10 → 26 Jul 06:10
+#       -> 2026/07/25/C/
+#
+# This ensures that all three shifts belonging to the same
+# production day are stored under the same folder.
+#
+# ==========================================================
 
 BASE_DIR="$HOME/whatsapp-summary"
 
@@ -16,47 +48,46 @@ DB_PATH="$BASE_DIR/data/messages.db"
 MEDIA_PATH="$HOME/.openclaw/media"
 
 # ==========================================================
-# Date / Shift (Server Time: UTC)
+# Determine Shift and Production Date
 # ==========================================================
 
-YEAR=$(date +%Y)
-MONTH=$(date +%m)
-DAY=$(date +%d)
 HOUR=$(date +%H)
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-#
-# Backup Schedule (UTC / IST)
-#
-# Backups are taken at the END of each shift.
-#
-# 00:40 UTC (06:10 IST) -> Backup C Shift (22:10–06:10 IST)
-# 08:40 UTC (14:10 IST) -> Backup A Shift (06:10–14:10 IST)
-# 16:40 UTC (22:10 IST) -> Backup B Shift (14:10–22:10 IST)
-#
-
 case "$HOUR" in
-    00)
+
+    06)
+        # End of C Shift
         SHIFT="C"
+        SHIFT_DATE=$(date -d "yesterday" +%Y/%m/%d)
         ;;
-    08)
+
+    14)
+        # End of A Shift
         SHIFT="A"
+        SHIFT_DATE=$(date +%Y/%m/%d)
         ;;
-    16)
+
+    22)
+        # End of B Shift
         SHIFT="B"
+        SHIFT_DATE=$(date +%Y/%m/%d)
         ;;
+
     *)
         echo "Backup should only be executed by the scheduled cron jobs."
-        echo "Current UTC Time: $(date)"
+        echo "Current Time : $(date)"
         exit 1
         ;;
+
 esac
 
-BACKUP_PREFIX="${YEAR}/${MONTH}/${DAY}/${SHIFT}"
+BACKUP_PREFIX="${SHIFT_DATE}/${SHIFT}"
 
 echo "======================================================"
 echo "Backup Started : $(date)"
 echo "Shift          : ${SHIFT}"
+echo "Shift Date     : ${SHIFT_DATE}"
 echo "S3 Bucket      : ${BUCKET}"
 echo "S3 Location    : s3://${BUCKET}/${BACKUP_PREFIX}"
 echo "======================================================"
@@ -95,7 +126,9 @@ if [ -f "$DB_PATH" ]; then
     rm -f "$DB_PATH"
 
 else
+
     echo "Database not found: $DB_PATH"
+
 fi
 
 # ==========================================================
@@ -117,7 +150,9 @@ if [ -d "$MEDIA_PATH" ]; then
     find "$MEDIA_PATH" -type f -delete
 
 else
+
     echo "Media directory not found: $MEDIA_PATH"
+
 fi
 
 # ==========================================================
@@ -126,6 +161,7 @@ fi
 
 echo "======================================================"
 echo "Backup completed successfully."
-echo "Shift : ${SHIFT}"
-echo "Time  : $(date)"
+echo "Shift          : ${SHIFT}"
+echo "Shift Date     : ${SHIFT_DATE}"
+echo "Completed Time : $(date)"
 echo "======================================================"
