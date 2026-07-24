@@ -26,22 +26,24 @@ HOUR=$(date +%H)
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 #
-# Cron Schedule (UTC)
+# Backup Schedule (UTC / IST)
 #
-# 00:40 UTC -> 06:10 IST -> A Shift
-# 08:40 UTC -> 14:10 IST -> B Shift
-# 16:40 UTC -> 22:10 IST -> C Shift
+# Backups are taken at the END of each shift.
+#
+# 00:40 UTC (06:10 IST) -> Backup C Shift (22:10–06:10 IST)
+# 08:40 UTC (14:10 IST) -> Backup A Shift (06:10–14:10 IST)
+# 16:40 UTC (22:10 IST) -> Backup B Shift (14:10–22:10 IST)
 #
 
 case "$HOUR" in
-    0)
+    00)
+        SHIFT="C"
+        ;;
+    08)
         SHIFT="A"
         ;;
-    8)
-        SHIFT="B"
-        ;;
     16)
-        SHIFT="C"
+        SHIFT="B"
         ;;
     *)
         echo "Backup should only be executed by the scheduled cron jobs."
