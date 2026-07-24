@@ -1,0 +1,47 @@
+{
+  "mcp": {
+    "servers": {
+      "cogniquaint_erp_mcp": {
+        "command": "/home/ubuntu/.local/bin/uv",
+        "args": [
+          "--directory",
+          "/home/ubuntu/erpnext-mcp",
+          "run",
+          "erpnext-mcp"
+        ],
+        "cwd": "/home/ubuntu/erpnext-mcp",
+        "env": {
+          "ERPNEXT_URL": "https://people.cogniquaint.com",
+          "ERPNEXT_API_KEY": "bcbb939ad300615",
+          "ERPNEXT_API_SECRET": "b5b450f3f702374"
+        }
+      },
+      "cogniquaint_demo_mcp": {
+        "command": "/home/ubuntu/.local/bin/uv",
+        "args": [
+          "--directory",
+          "/home/ubuntu/erpnext-mcp",
+          "run",
+          "erpnext-mcp"
+        ],
+        "cwd": "/home/ubuntu/erpnext-mcp",
+        "env": {
+          "ERPNEXT_URL": "https://demo.cogniquaint.com",
+          "ERPNEXT_API_KEY": "a1b4100afada7ff",
+          "ERPNEXT_API_SECRET": "772d5820c941bb3"
+        }
+      }
+    }
+  },
+
+  "tools": {
+    "sandbox": {
+      "tools": {
+        "alsoAllow": [
+          "cogniquaint_erp_mcp__*",
+          "cogniquaint_demo_mcp__*"
+        ]
+      }
+    }
+  }
+}
