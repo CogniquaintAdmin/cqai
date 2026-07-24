@@ -86,7 +86,7 @@ if [ -f "$DB_PATH" ]; then
 
     aws s3 cp \
         "$DB_PATH" \
-        "s3://${BUCKET}/${BACKUP_PREFIX}/messages_${TIMESTAMP}.db"
+        "s3://${BUCKET}/${BACKUP_PREFIX}/messages.db"
 
     echo "Database uploaded successfully."
 
