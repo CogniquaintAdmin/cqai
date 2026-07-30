@@ -50,31 +50,56 @@ class MessageType(str, Enum):
 @dataclass
 class WhatsAppMessage:
 
+    # ==========================================================
+    # Conversation
+    # ==========================================================
     group_id: str
     group_name: Optional[str] = None
 
+    # ==========================================================
+    # Sender
+    # ==========================================================
     sender: str = ""
-    body: str = ""
-    timestamp: int = 0
-
-    message_type: MessageType = MessageType.TEXT
-
-    media_path: Optional[str] = None
-    media_type: Optional[str] = None
-    media_filename: Optional[str] = None
-
-    remote_jid: Optional[str] = None
     participant: Optional[str] = None
     sender_e164: Optional[str] = None
     push_name: Optional[str] = None
 
+    # ==========================================================
+    # Message
+    # ==========================================================
+    body: str = ""
+    command_body: Optional[str] = None
+    timestamp: int = 0
+    message_type: MessageType = MessageType.TEXT
+
+    # ==========================================================
+    # Reply / Mentions
+    # ==========================================================
+    reply: Optional[dict] = None
+    mentioned_jids: Optional[list] = None
+
+    # ==========================================================
+    # Media
+    # ==========================================================
+    media_path: Optional[str] = None
+    media_type: Optional[str] = None
+    media_filename: Optional[str] = None
+
+    # ==========================================================
+    # Location
+    # ==========================================================
+    location: Optional[dict] = None
+
+    # ==========================================================
+    # WhatsApp Metadata
+    # ==========================================================
+    remote_jid: Optional[str] = None
     message_id: Optional[str] = None
     from_me: bool = False
 
-    mentioned_jids: Optional[list] = None
-
-    reply: Optional[dict] = None
-
+    # ==========================================================
+    # Raw Event
+    # ==========================================================
     normalized_event: Optional[dict] = None
 
     @property
