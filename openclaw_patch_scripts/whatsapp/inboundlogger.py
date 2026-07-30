@@ -4,7 +4,10 @@ from pathlib import Path
 import re
 import shutil
 
-MONITOR = Path.home() / ".openclaw/extensions/whatsapp/dist/monitor-DD8bXohk.js"
+MONITOR = (
+    Path.home()
+    / ".openclaw/extensions/whatsapp/dist/monitor-DD8bXohk.js"
+)
 
 NEW_LOGGER = """inboundLogger.info({
 \t\t\tfrom: inbound.from,
@@ -12,6 +15,7 @@ NEW_LOGGER = """inboundLogger.info({
 
 \t\t\t// Group / sender
 \t\t\tremoteJid: inbound.remoteJid,
+\t\t\tgroupName: msg.group?.subject,
 \t\t\tparticipant: inbound.participantJid,
 \t\t\tsenderJid: inbound.senderJid,
 \t\t\tsenderE164: inbound.senderE164,
@@ -46,14 +50,22 @@ match = pattern.search(text)
 
 if not match:
     print("❌ Could not locate inboundLogger.info()")
-    exit(1)
+    raise SystemExit(1)
 
 backup = MONITOR.with_suffix(".js.bak")
 shutil.copy2(MONITOR, backup)
 
-patched = pattern.sub(NEW_LOGGER, text, count=1)
+patched = pattern.sub(
+    NEW_LOGGER,
+    text,
+    count=1,
+)
 
-MONITOR.write_text(patched, encoding="utf-8")
+MONITOR.write_text(
+    patched,
+    encoding="utf-8",
+)
 
-print("✅ monitor patched")
-print(f"Backup: {backup}")
+print("✅ monitor patched successfully")
+print(f"Backup : {backup}")
+print(f"Monitor: {MONITOR}")
