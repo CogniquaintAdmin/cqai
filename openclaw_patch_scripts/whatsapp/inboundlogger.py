@@ -15,9 +15,9 @@ NEW_LOGGER = """inboundLogger.info({
 
 \t\t\t// Group / sender
 \t\t\tremoteJid: inbound.remoteJid,
-\t\t\tgroupName: msg.group?.subject,
+\t\t\tgroupName: inbound.groupSubject,
 \t\t\tparticipant: inbound.participantJid,
-\t\t\tsenderJid: inbound.senderJid,
+\t\t\tsenderJid: inbound.participantJid,
 \t\t\tsenderE164: inbound.senderE164,
 \t\t\tpushName: msg.pushName,
 
