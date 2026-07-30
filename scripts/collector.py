@@ -105,56 +105,96 @@ class MessageRepository:
             )
         """)
 
-        # Create messages table with FK to groups
+        #Create messages table with FK to groups
         self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS "messages" (
+            CREATE TABLE IF NOT EXISTS messages (
 
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
 
+                -- ==========================================================
+                -- Conversation
+                -- ==========================================================
                 group_id TEXT NOT NULL,
                 group_name TEXT,
-                sender TEXT,
-                body TEXT,
 
+                -- ==========================================================
+                -- Sender
+                -- ==========================================================
+                sender TEXT,
+                participant TEXT,
+                sender_e164 TEXT,
+                push_name TEXT,
+
+                -- ==========================================================
+                -- Message
+                -- ==========================================================
+                body TEXT,
+                command_body TEXT,
                 message_type TEXT,
 
+                -- ==========================================================
+                -- Reply
+                -- ==========================================================
+                reply TEXT,
+
+                -- ==========================================================
+                -- Mentions
+                -- ==========================================================
+                mentioned_jids TEXT,
+
+                -- ==========================================================
+                -- Media
+                -- ==========================================================
                 media_path TEXT,
                 media_type TEXT,
                 media_filename TEXT,
 
+                -- ==========================================================
+                -- Location
+                -- ==========================================================
+                location TEXT,
+
+                -- ==========================================================
+                -- WhatsApp Metadata
+                -- ==========================================================
+                remote_jid TEXT,
+                message_id TEXT UNIQUE,
+                from_me INTEGER DEFAULT 0,
                 timestamp INTEGER,
 
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                -- ==========================================================
+                -- Raw Event
+                -- ==========================================================
+                normalized_event TEXT,
 
+                -- ==========================================================
+                -- AI Processing
+                -- ==========================================================
                 normalized_content TEXT,
 
                 enrichment_status TEXT DEFAULT 'pending',
 
                 ai_content TEXT,
-
                 ai_metadata TEXT,
-
-                enriched_at DATETIME,
 
                 ocr_text TEXT,
                 transcript TEXT,
                 ai_caption TEXT,
+
+                enriched_at DATETIME,
                 last_error TEXT,
 
-                remote_jid TEXT,
-                participant TEXT,
-                sender_e164 TEXT,
-                push_name TEXT,
-                message_id TEXT,
-                from_me INTEGER DEFAULT 0,
-                mentioned_jids TEXT,
-                normalized_event TEXT,
+                -- ==========================================================
+                -- Audit
+                -- ==========================================================
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-                FOREIGN KEY (group_id) REFERENCES groups(group_id)
+                FOREIGN KEY (group_id)
+                    REFERENCES groups(group_id)
 
             )
         """)
-
+    
         self.conn.commit()
 
     def save(self, message):
@@ -176,60 +216,109 @@ class MessageRepository:
         )
 
         self.conn.execute(
-            """
-            INSERT INTO messages (
+                        """
+                        INSERT INTO messages (
 
-                group_id,
-                group_name,
-                sender,
-                body,
+                            group_id,
+                            group_name,
 
-                message_type,
+                            sender,
+                            participant,
+                            sender_e164,
+                            push_name,
 
-                media_path,
-                media_type,
-                media_filename,
+                            body,
+                            command_body,
+                            message_type,
 
-                timestamp,
-                remote_jid,
-                participant,
-                sender_e164,
-                push_name,
-                message_id,
-                from_me,
-                mentioned_jids,
-                normalized_event
+                            reply,
 
-            )
+                            mentioned_jids,
 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
+                            media_path,
+                            media_type,
+                            media_filename,
 
-                message.group_id,
-                message.group_name,
-                message.sender,
-                message.body,
+                            location,
 
-                message.message_type.value,
+                            timestamp,
+                            remote_jid,
+                            message_id,
+                            from_me,
 
-                message.media_path,
-                message.media_type,
-                message.media_filename,
+                            normalized_event
 
-                message.timestamp,
-                message.remote_jid,
-                message.participant,
-                message.sender_e164,
-                message.push_name,
-                message.message_id,
-                int(message.from_me),
-                json.dumps(message.mentioned_jids or []),
-                json.dumps(message.normalized_event or {})
+                        )
 
-            )
-        )
+                        VALUES (
+                            ?, ?, ?, ?, ?, ?,
+                            ?, ?, ?, ?, ?,
+                            ?, ?, ?, ?,
+                            ?, ?, ?, ?,
+                            ?
+                        )
+                        """,
+                        (
 
+                            # ======================================================
+                            # Conversation
+                            # ======================================================
+                            message.group_id,
+                            message.group_name,
+
+                            # ======================================================
+                            # Sender
+                            # ======================================================
+                            message.sender,
+                            message.participant,
+                            message.sender_e164,
+                            message.push_name,
+
+                            # ======================================================
+                            # Message
+                            # ======================================================
+                            message.body,
+                            getattr(message, "command_body", None),
+                            message.message_type.value,
+
+                            # ======================================================
+                            # Reply
+                            # ======================================================
+                            json.dumps(getattr(message, "reply", None)),
+
+                            # ======================================================
+                            # Mentions
+                            # ======================================================
+                            json.dumps(message.mentioned_jids or []),
+
+                            # ======================================================
+                            # Media
+                            # ======================================================
+                            message.media_path,
+                            message.media_type,
+                            message.media_filename,
+
+                            # ======================================================
+                            # Location
+                            # ======================================================
+                            json.dumps(getattr(message, "location", None)),
+
+                            # ======================================================
+                            # WhatsApp Metadata
+                            # ======================================================
+                            message.timestamp,
+                            message.remote_jid,
+                            message.message_id,
+                            int(message.from_me),
+
+                            # ======================================================
+                            # Raw Event
+                            # ======================================================
+                            json.dumps(message.normalized_event or {}),
+
+                        ),
+                    )
+        
         self.conn.commit()
 
 
@@ -297,34 +386,63 @@ class WebInboundParser:
 
             return WhatsAppMessage(
 
+                # ==========================================================
+                # Conversation
+                # ==========================================================
                 group_id=payload.get("from", ""),
-
                 group_name=payload.get("groupName"),
 
+                # ==========================================================
+                # Sender
+                # ==========================================================
                 sender=payload.get("to", ""),
-
-                body=payload.get("body", ""),
-
-                timestamp=payload.get("timestamp", 0),
-
-                message_type=self.detect_type(payload),
-
-                media_path=payload.get("mediaPath"),
-
-                media_type=payload.get("mediaType"),
-
-                media_filename=payload.get("mediaFileName"),
-                remote_jid=payload.get("remoteJid"),
                 participant=payload.get("participant"),
                 sender_e164=payload.get("senderE164"),
                 push_name=payload.get("pushName"),
+
+                # ==========================================================
+                # Message
+                # ==========================================================
+                body=payload.get("body", ""),
+                command_body=payload.get("commandBody"),
+                message_type=self.detect_type(payload),
+
+                # ==========================================================
+                # Reply
+                # ==========================================================
+                reply=payload.get("reply"),
+
+                # ==========================================================
+                # Mentions
+                # ==========================================================
+                mentioned_jids=payload.get("mentionedJids", []),
+
+                # ==========================================================
+                # Media
+                # ==========================================================
+                media_path=payload.get("mediaPath"),
+                media_type=payload.get("mediaType"),
+                media_filename=payload.get("mediaFileName"),
+
+                # ==========================================================
+                # Location
+                # ==========================================================
+                location=payload.get("location"),
+
+                # ==========================================================
+                # WhatsApp Metadata
+                # ==========================================================
+                timestamp=payload.get("timestamp", 0),
+                remote_jid=payload.get("remoteJid"),
                 message_id=payload.get("messageId"),
                 from_me=payload.get("fromMe", False),
-                mentioned_jids=payload.get("mentionedJids", []),
-                normalized_event=payload
+
+                # ==========================================================
+                # Raw Event
+                # ==========================================================
+                normalized_event=payload,
 
             )
-
         except Exception as e:
 
             print("PARSE ERROR:", e)
