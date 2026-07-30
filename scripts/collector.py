@@ -86,11 +86,19 @@ class MessageRepository:
 
         # Create groups table
         self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS "groups" (
+            CREATE TABLE IF NOT EXISTS groups (
 
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                -- WhatsApp Group JID
                 group_id TEXT UNIQUE NOT NULL,
+
+                -- WhatsApp Group Name
+                group_name TEXT,
+
+                -- Group Participants
                 participants TEXT NOT NULL DEFAULT '[]',
+
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 
@@ -155,14 +163,15 @@ class MessageRepository:
 
         self.conn.execute(
             """
-            INSERT INTO groups (group_id, participants)
-            VALUES (?, ?)
+            INSERT INTO groups (group_id, group_name, participants)
+            VALUES (?, ?, ?)
             ON CONFLICT(group_id)
             DO UPDATE SET
+                group_name=excluded.group_name,
                 participants=excluded.participants,
                 updated_at=CURRENT_TIMESTAMP
             """,
-            (message.group_id, participants)
+            (message.group_id, message.group_name, participants)
         )
 
         self.conn.execute(
@@ -170,6 +179,7 @@ class MessageRepository:
             INSERT INTO messages (
 
                 group_id,
+                group_name,
                 sender,
                 body,
 
@@ -191,11 +201,12 @@ class MessageRepository:
 
             )
 
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
 
                 message.group_id,
+                message.group_name,
                 message.sender,
                 message.body,
 
@@ -286,6 +297,8 @@ class WebInboundParser:
             return WhatsAppMessage(
 
                 group_id=payload.get("from", ""),
+
+                group_name=payload.get("groupName"),
 
                 sender=payload.get("to", ""),
 
