@@ -137,17 +137,30 @@ fi
 
 if [ -d "$MEDIA_PATH" ]; then
 
-    echo "Uploading media..."
+    MEDIA_COUNT=$(find "$MEDIA_PATH" -type f | wc -l)
 
-    aws s3 sync \
-        "$MEDIA_PATH" \
-        "s3://${BUCKET}/${BACKUP_PREFIX}/media/"
+    echo "Media files found : ${MEDIA_COUNT}"
 
-    echo "Media uploaded successfully."
+    if [ "$MEDIA_COUNT" -gt 0 ]; then
 
-    echo "Removing local media..."
+        echo "Uploading media..."
 
-    find "$MEDIA_PATH" -type f -delete
+        aws s3 sync \
+            "$MEDIA_PATH" \
+            "s3://${BUCKET}/${BACKUP_PREFIX}/media/"
+
+        echo "Media uploaded successfully."
+        echo "Media files uploaded : ${MEDIA_COUNT}"
+
+        echo "Removing local media..."
+
+        find "$MEDIA_PATH" -type f -delete
+
+    else
+
+        echo "No media files found to upload."
+
+    fi
 
 else
 
