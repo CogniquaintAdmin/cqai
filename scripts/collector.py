@@ -112,6 +112,7 @@ class MessageRepository:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
 
                 group_id TEXT NOT NULL,
+                group_name TEXT,
                 sender TEXT,
                 body TEXT,
 
@@ -201,7 +202,7 @@ class MessageRepository:
 
             )
 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
 
