@@ -51,22 +51,30 @@ class MessageType(str, Enum):
 class WhatsAppMessage:
 
     group_id: str
-    sender: str
-    body: str
-    timestamp: int
+    group_name: Optional[str] = None
+
+    sender: str = ""
+    body: str = ""
+    timestamp: int = 0
 
     message_type: MessageType = MessageType.TEXT
 
     media_path: Optional[str] = None
     media_type: Optional[str] = None
     media_filename: Optional[str] = None
+
     remote_jid: Optional[str] = None
     participant: Optional[str] = None
     sender_e164: Optional[str] = None
     push_name: Optional[str] = None
+
     message_id: Optional[str] = None
     from_me: bool = False
+
     mentioned_jids: Optional[list] = None
+
+    reply: Optional[dict] = None
+
     normalized_event: Optional[dict] = None
 
     @property
